@@ -224,6 +224,7 @@ export default function Home() {
   const [showLogin, setShowLogin] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [showPitch, setShowPitch] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [loginStep, setLoginStep] = useState<"phone" | "otp">("phone");
   const [phone, setPhone] = useState("");
   const [order, setOrder] = useState<{ id: string; eventId: string } | null>(null);
@@ -240,6 +241,32 @@ export default function Home() {
       .then(data => setHealth(data.services ?? health))
       .catch(() => undefined);
   }, []);
+
+  useEffect(() => {
+    const shouldLock = showCart || showLogin || showCheckout || showPitch || Boolean(order);
+    if (!shouldLock) return;
+    const scrollY = window.scrollY;
+    const previous = {
+      htmlOverflow: document.documentElement.style.overflow,
+      bodyOverflow: document.body.style.overflow,
+      bodyPosition: document.body.style.position,
+      bodyTop: document.body.style.top,
+      bodyWidth: document.body.style.width,
+    };
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+    return () => {
+      document.documentElement.style.overflow = previous.htmlOverflow;
+      document.body.style.overflow = previous.bodyOverflow;
+      document.body.style.position = previous.bodyPosition;
+      document.body.style.top = previous.bodyTop;
+      document.body.style.width = previous.bodyWidth;
+      window.scrollTo(0, scrollY);
+    };
+  }, [showCart, showLogin, showCheckout, showPitch, order]);
 
   const filteredProducts = useMemo(() => products.filter(product => {
     const inCategory = category === "All picks" || product.category === category;
@@ -317,9 +344,9 @@ export default function Home() {
           <button className="city-picker" onClick={() => setCity(current => cities[(cities.indexOf(current) + 1) % cities.length])}>
             <MapPin size={16} /><span><small>Deliver to</small><strong>{city}</strong></span><ChevronDown size={14} />
           </button>
-          <label className="search-box">
-            <Search size={19} /><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search for products, brands and more" /><kbd>⌘ K</kbd>
-          </label>
+          <form className={`search-box ${searchOpen ? "search-box-active" : ""}`} onSubmit={event => { event.preventDefault(); setSearchOpen(true); }}>
+            <Search size={19} /><input value={query} onFocus={() => setSearchOpen(true)} onChange={event => setQuery(event.target.value)} placeholder="Search for products, brands and more" /><kbd>⌘ K</kbd>
+          </form>
           <div className="header-actions">
             <button className="account-button" onClick={() => setShowLogin(true)}><UserRound size={18} /><span><small>Hello, sign in</small><strong>Account</strong></span><ChevronDown size={14} /></button>
             <button className="icon-action" aria-label="Notifications"><Bell size={20} /><i /></button>
@@ -335,7 +362,11 @@ export default function Home() {
         </nav>
       </header>
 
-      <main>
+      {searchOpen ? <section className="search-page container">
+        <div className="search-page-top"><button className="back-link search-back" onClick={() => setSearchOpen(false)}><ChevronRight size={15} /> Back to home</button><span className="tiny-label">OpenSearch results</span></div>
+        <div className="search-page-heading"><div><span className="eyebrow"><span className="eyebrow-dot" /> Search, sorted</span><h1>{query.trim() ? <>Results for <em>“{query}”</em></> : <>What are you<br /><em>looking for?</em></>}</h1><p>{query.trim() ? `${filteredProducts.length} products matched across your city-smart catalog.` : "Start typing above and Bazaarly will bring the right picks forward."}</p></div><div className="search-page-signal"><Search size={17} /><strong>Typo-tolerant discovery</strong><small>Try “bluetoth” or “wireless”</small></div></div>
+        {query.trim() ? <>{filteredProducts.length > 0 ? <div className="product-grid search-results-grid">{filteredProducts.map(product => { const available = product.stock[city] ?? 0; return <article className="product-card" key={product.id}><div className="product-image" style={{ "--product-bg": product.accent } as React.CSSProperties}><span className="product-badge">{product.badge}</span><button className="wishlist" aria-label={`Save ${product.name}`}><Heart size={17} /></button><img src={product.image} alt={product.name} /></div><div className="product-meta"><div className="rating"><Star size={13} fill="currentColor" /> {product.rating} <span>({product.reviews})</span></div><h3>{product.name}</h3><div className="price-row"><strong>{formatPrice(product.price)}</strong><s>{formatPrice(product.mrp)}</s><span>{discount(product)}% off</span></div><div className={`stock-line ${available < 5 ? "low" : ""}`}><span className="stock-dot" /> {available === 0 ? "Out of stock in " + city : available < 5 ? `Only ${available} left in ${city}` : `${available} available in ${city}`}</div><button className="add-button" disabled={available === 0} onClick={() => addToCart(product)}>{available === 0 ? "Notify me" : <><Plus size={17} /> Add to cart</>}</button></div></article>; })}</div> : <div className="empty-state search-empty"><Search size={32} /><h3>No exact match yet</h3><p>Try a broader search, or search for “bluetoth” to see typo-tolerant discovery in action.</p><button className="primary-button" onClick={() => setQuery("")}>Clear search</button></div>}</> : <div className="search-suggestions"><span className="tiny-label">Popular right now</span><div>{["bluetooth earphones", "laptop backpack", "home kitchen", "sneakers", "vitamin c serum"].map(suggestion => <button key={suggestion} onClick={() => setQuery(suggestion)}><Search size={14} />{suggestion}<ArrowRight size={13} /></button>)}</div></div>}
+      </section> : <main>
         <section className="hero container">
           <div className="hero-copy">
             <div className="eyebrow"><span className="eyebrow-dot" /> Curated for {city} <ArrowRight size={14} /></div>
@@ -388,7 +419,7 @@ export default function Home() {
         <section className="promise-section container"><div className="promise-copy"><span className="tiny-label">The Bazaarly difference</span><h2>Shopping that feels<br /><em>thought through.</em></h2><p>We built the bits we wish every store had: honest stock, useful filters, and a checkout that tells you exactly what is happening behind the scenes.</p><button className="outline-button" onClick={() => setShowPitch(true)}>See how it works <ArrowRight size={16} /></button></div><div className="promise-grid"><div><span className="promise-number">01</span><BadgeCheck size={23} /><h3>Stock, in context</h3><p>City-level inventory helps you choose with confidence.</p></div><div><span className="promise-number">02</span><Zap size={23} /><h3>Events, in motion</h3><p>Every order triggers a clear downstream journey.</p></div><div><span className="promise-number">03</span><ShieldCheck size={23} /><h3>No hidden surprises</h3><p>Price, delivery and availability stay visible.</p></div><div><span className="promise-number">04</span><Heart size={23} /><h3>Made for real life</h3><p>Useful picks for the way India actually shops.</p></div></div></section>
 
         <section className="newsletter-section container"><div><span className="tiny-label">Good things, occasionally</span><h2>A little note from Bazaarly.</h2><p>New drops, city-specific finds and price drops. No noise.</p></div><form onSubmit={event => { event.preventDefault(); toast.success("You're on the list", { description: "Watch your inbox for the good stuff." }); }}><input type="email" placeholder="Your email address" aria-label="Email address" required /><button className="primary-button" type="submit">Keep me posted <ArrowRight size={16} /></button></form></section>
-      </main>
+      </main>}
 
       <footer className="site-footer"><div className="container footer-inner"><div><Logo /><p>Everyday India, delivered with a little more care.</p></div><div className="footer-links"><span>About Bazaarly</span><span>Careers</span><span>Privacy</span><span>Terms</span></div><div className="footer-credit">Aiven-powered demo<br /><span>PostgreSQL · Kafka · OpenSearch</span></div></div></footer>
 
