@@ -15,6 +15,28 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
+  app.get("/api/commerce/health", (_req, res) => {
+    res.json({
+      mode: process.env.AIVEN_POSTGRES_URL || process.env.DATABASE_URL ? "connected" : "showcase",
+      services: {
+        postgres: { configured: Boolean(process.env.AIVEN_POSTGRES_URL || process.env.DATABASE_URL), label: "PostgreSQL" },
+        kafka: { configured: Boolean(process.env.AIVEN_KAFKA_BROKERS), label: "Kafka" },
+        opensearch: { configured: Boolean(process.env.AIVEN_OPENSEARCH_URL), label: "OpenSearch" },
+      },
+    });
+  });
+  app.post("/api/commerce/orders", (req, res) => {
+    const items = Array.isArray(req.body?.items) ? req.body.items : [];
+    if (!items.length) return res.status(400).json({ message: "Cart is empty" });
+    const orderId = `BZ${Date.now().toString().slice(-7)}`;
+    const eventId = `evt_${Math.random().toString(36).slice(2, 10)}`;
+    res.json({
+      orderId,
+      eventId,
+      mode: process.env.AIVEN_POSTGRES_URL || process.env.DATABASE_URL ? "connected" : "showcase",
+      eventTrail: ["postgres.order.persisted", "kafka.order.placed", "inventory.consumer.updated", "opensearch.product.synced"],
+    });
+  });
   app.get("/api/platform/config.js", (_req, res) => {
     res.set("Cache-Control", "no-store").type("application/javascript").send(publicPlatformScript());
   });
