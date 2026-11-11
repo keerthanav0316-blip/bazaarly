@@ -7,6 +7,7 @@ import { publicPlatformScript } from "./publicConfig";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { createAivenOrder, getAivenServiceConfig } from "../aiven";
 
 async function startServer() {
   const app = express();
@@ -17,24 +18,20 @@ async function startServer() {
   app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
   app.get("/api/commerce/health", (_req, res) => {
     res.json({
-      mode: process.env.AIVEN_POSTGRES_URL || process.env.DATABASE_URL ? "connected" : "showcase",
-      services: {
-        postgres: { configured: Boolean(process.env.AIVEN_POSTGRES_URL || process.env.DATABASE_URL), label: "PostgreSQL" },
-        kafka: { configured: Boolean(process.env.AIVEN_KAFKA_BROKERS), label: "Kafka" },
-        opensearch: { configured: Boolean(process.env.AIVEN_OPENSEARCH_URL), label: "OpenSearch" },
-      },
+      mode: Object.values(getAivenServiceConfig()).some(service => service.configured) ? "connected" : "showcase",
+      services: getAivenServiceConfig(),
     });
   });
-  app.post("/api/commerce/orders", (req, res) => {
+  app.post("/api/commerce/orders", async (req, res) => {
     const items = Array.isArray(req.body?.items) ? req.body.items : [];
     if (!items.length) return res.status(400).json({ message: "Cart is empty" });
     const orderId = `BZ${Date.now().toString().slice(-7)}`;
     const eventId = `evt_${Math.random().toString(36).slice(2, 10)}`;
-    res.json({
+    const result = await createAivenOrder({ orderId, eventId, city: String(req.body?.city || "Mumbai"), items, total: Number(req.body?.total || 0) });
+    res.status(result.complete ? 200 : 502).json({
       orderId,
       eventId,
-      mode: process.env.AIVEN_POSTGRES_URL || process.env.DATABASE_URL ? "connected" : "showcase",
-      eventTrail: ["postgres.order.persisted", "kafka.order.placed", "inventory.consumer.updated", "opensearch.product.synced"],
+      ...result,
     });
   });
   app.get("/api/platform/config.js", (_req, res) => {
