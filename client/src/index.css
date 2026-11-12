@@ -116,3 +116,35 @@ h1 em, h2 em { color:var(--blue); font-style:normal; }
   .success-modal .success-actions { align-items:center; margin-top:20px; }
 }
 @media (max-width:700px) { .city-picker select { max-width:120px; }.notification-panel { position:fixed; top:78px; right:16px; width:min(280px,calc(100vw - 32px)); }.product-detail-modal { width:calc(100% - 24px); grid-template-columns:1fr; max-height:calc(100vh - 24px); overflow:auto; }.detail-image { min-height:210px; padding:20px; }.detail-image img { max-height:170px; }.detail-copy { padding:29px 22px 25px; }.detail-copy h2 { font-size:25px; }.story-flow { gap:4px; padding:11px 9px; }.story-flow > svg { width:12px; }.story-flow strong { font-size:9px; }.story-flow small { font-size:7px; }.wishlist-drawer { width:100%; }.city-filter select { font-size:9px; } }
+
+.order-confirmed-modal { width:min(760px, calc(100% - 32px)); max-height:calc(100vh - 32px); overflow:auto; padding:38px 34px 28px; }
+.order-confirmed-modal > p { margin:8px auto 24px; max-width:520px; }
+.confirmed-order-layout { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(220px,.8fr); gap:14px; text-align:left; }
+.confirmed-products, .confirmed-customer { border:1px solid var(--line); border-radius:16px; padding:16px; background:#fff; }
+.confirmed-section-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:13px; }
+.confirmed-section-heading h3 { margin:3px 0 0; font-size:18px; }
+.confirmed-section-heading > span { color:var(--muted); font-size:11px; font-weight:700; }
+.confirmed-section-heading > svg { color:var(--blue); margin-top:4px; }
+.confirmed-product-line { display:grid; grid-template-columns:48px 1fr auto; align-items:center; gap:10px; padding:11px 0; border-top:1px solid var(--line); }
+.confirmed-product-line img { width:48px; height:48px; object-fit:contain; border-radius:10px; background:#f5f7fb; }
+.confirmed-product-line strong, .confirmed-product-line b { font-size:12px; }
+.confirmed-product-line small, .confirmed-customer p { display:block; color:var(--muted); font-size:11px; line-height:1.55; margin-top:4px; }
+.confirmed-total { display:flex; justify-content:space-between; border-top:1px dashed var(--line); margin-top:5px; padding-top:13px; font-size:13px; }
+.confirmed-total strong { font-size:17px; color:var(--ink); }
+.confirmed-customer p { color:var(--ink); margin:15px 0 0; }
+.confirmed-customer p strong { font-size:13px; }
+.delivery-note { display:flex; align-items:center; gap:7px; color:#23734b; background:#eefaf3; border-radius:9px; padding:10px; margin-top:16px; font-size:11px; font-weight:700; }
+.mobile-bottom-nav { display:none; }
+@media (max-width:700px) {
+  body { padding-bottom:76px; }
+  .checkout-form select { min-height:44px; width:100%; border:1px solid var(--line); border-radius:10px; padding:0 12px; background:#fff; color:var(--ink); font:inherit; }
+  .order-confirmed-modal { width:calc(100% - 16px); max-height:calc(100vh - 18px); padding:31px 15px 18px; }
+  .confirmed-order-layout { grid-template-columns:1fr; gap:10px; }
+  .confirmed-products, .confirmed-customer { padding:13px; }
+  .confirmed-section-heading h3 { font-size:16px; }
+  .mobile-bottom-nav { position:fixed; z-index:20; display:grid; grid-template-columns:repeat(5,1fr); left:0; right:0; bottom:0; height:66px; padding:7px 5px max(7px, env(safe-area-inset-bottom)); background:rgba(255,255,255,.97); border-top:1px solid var(--line); box-shadow:0 -6px 24px rgba(16,35,64,.1); }
+  .mobile-bottom-nav button { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; border:0; background:transparent; color:var(--muted); font:700 9px/1.1 inherit; cursor:pointer; }
+  .mobile-bottom-nav button.active, .mobile-bottom-nav button:active { color:var(--blue); }
+  .mobile-bottom-nav button svg { stroke-width:2.4; }
+  .success-actions { flex-wrap:wrap; justify-content:center; }
+}
