@@ -245,7 +245,14 @@ export default function Home() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [loginStep, setLoginStep] = useState<"phone" | "otp">("phone");
   const [phone, setPhone] = useState("");
-  const [order, setOrder] = useState<ConfirmedOrder | null>(null);
+  const [order, setOrder] = useState<ConfirmedOrder | null>(() => {
+    try {
+      const saved = window.localStorage.getItem("bazaarly:last-confirmed-order");
+      return saved ? JSON.parse(saved) as ConfirmedOrder : null;
+    } catch {
+      return null;
+    }
+  });
   const [customerDetails, setCustomerDetails] = useState<CustomerDetails>({ name: "Aditi Rao", phone: "98765 43210", address: "24, Palm Grove, Bandra West", city: "Mumbai", state: "Maharashtra", pin: "400050" });
   const [placingOrder, setPlacingOrder] = useState(false);
   const [health, setHealth] = useState<Record<string, ServiceStatus>>({
@@ -353,7 +360,13 @@ export default function Home() {
         body: JSON.stringify({ city, items: cart.map(line => ({ productId: line.product.id, quantity: line.quantity })), total }),
       });
       const result = await response.json();
-      setOrder({ id: result.orderId, eventId: result.eventId, items: cart, total, customer: customerDetails });
+      const confirmedOrder = { id: result.orderId, eventId: result.eventId, items: cart, total, customer: customerDetails };
+      setOrder(confirmedOrder);
+      try {
+        window.localStorage.setItem("bazaarly:last-confirmed-order", JSON.stringify(confirmedOrder));
+      } catch {
+        // The order remains visible for this session if browser storage is unavailable.
+      }
       setCart([]);
       setShowCheckout(false);
       setShowCart(false);
