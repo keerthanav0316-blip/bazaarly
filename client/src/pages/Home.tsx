@@ -53,6 +53,7 @@ type Product = {
 type CartLine = { product: Product; quantity: number };
 type CustomerDetails = { name: string; phone: string; address: string; city: string; state: string; pin: string };
 type ConfirmedOrder = { id: string; eventId: string; items: CartLine[]; total: number; customer: CustomerDetails };
+type DeliveryStatus = "Confirmed" | "Packed" | "Out for delivery" | "Delivered";
 
 type ServiceStatus = { configured: boolean; label: string };
 
@@ -236,7 +237,10 @@ export default function Home() {
   const [showPitch, setShowPitch] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showWishlist, setShowWishlist] = useState(false);
+  const [showOrders, setShowOrders] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [trackingProduct, setTrackingProduct] = useState<CartLine | null>(null);
+  const [trackingStep, setTrackingStep] = useState(0);
   const [wishlistIds, setWishlistIds] = useState<string[]>([]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [loginStep, setLoginStep] = useState<"phone" | "otp">("phone");
@@ -258,7 +262,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const shouldLock = showCart || showLogin || showCheckout || showPitch || showWishlist || Boolean(selectedProduct) || Boolean(order);
+    const shouldLock = showCart || showLogin || showCheckout || showPitch || showWishlist || showOrders || Boolean(selectedProduct) || Boolean(order) || Boolean(trackingProduct);
     if (!shouldLock) return;
     const scrollY = window.scrollY;
     const previous = {
@@ -281,7 +285,7 @@ export default function Home() {
       document.body.style.width = previous.bodyWidth;
       window.scrollTo(0, scrollY);
     };
-  }, [showCart, showLogin, showCheckout, showPitch, showWishlist, selectedProduct, order]);
+  }, [showCart, showLogin, showCheckout, showPitch, showWishlist, showOrders, selectedProduct, order, trackingProduct]);
 
   const filteredProducts = useMemo(() => products.filter(product => {
     const inCategory = category === "All picks" || product.category === category;
@@ -294,6 +298,17 @@ export default function Home() {
   const subtotal = cart.reduce((sum, line) => sum + line.quantity * line.product.price, 0);
   const deliveryFee = subtotal === 0 || subtotal >= 499 ? 0 : 49;
   const total = subtotal + deliveryFee;
+  const deliveryStatuses: DeliveryStatus[] = ["Confirmed", "Packed", "Out for delivery", "Delivered"];
+  const trackingStatus = deliveryStatuses[trackingStep];
+
+  const openTracking = (line: CartLine) => {
+    setTrackingProduct(line);
+    setTrackingStep(0);
+  };
+
+  const advanceTracking = () => {
+    setTrackingStep(current => Math.min(current + 1, deliveryStatuses.length - 1));
+  };
 
   const addToCart = (product: Product) => {
     const available = product.stock[city] ?? 0;
@@ -443,7 +458,11 @@ export default function Home() {
 
       <footer className="site-footer"><div className="container footer-inner"><div><Logo /><p>Everyday India, delivered with a little more care.</p></div><div className="footer-links"><span>About Bazaarly</span><span>Careers</span><span>Privacy</span><span>Terms</span></div><div className="footer-credit">Aiven-powered demo<br /><span>PostgreSQL · Kafka · OpenSearch</span></div></div></footer>
 
+      {showOrders && <div className="overlay"><div className="drawer orders-drawer"><div className="drawer-header"><div><span className="tiny-label">Your purchases</span><h2>My Orders</h2></div><button className="close-button" onClick={() => setShowOrders(false)}><X size={20} /></button></div>{!order ? <div className="cart-empty"><div className="empty-bag"><PackageCheck size={32} /></div><h3>No orders yet</h3><p>Your confirmed purchases will appear here.</p><button className="primary-button" onClick={() => setShowOrders(false)}>Start shopping</button></div> : <div className="orders-content"><div className="order-card-heading"><div><span className="tiny-label">Order #{order.id}</span><h3>{order.items.length} {order.items.length === 1 ? "product" : "products"}</h3></div><span className="order-status-pill"><Check size={13} /> Confirmed</span></div><p className="order-delivery-copy">Delivering to {order.customer.city}, {order.customer.state}</p><div className="order-items-list">{order.items.map(line => <button className="order-item-row" key={line.product.id} onClick={() => openTracking(line)}><img src={line.product.image} alt="" /><span><strong>{line.product.name}</strong><small>Qty {line.quantity} · {formatPrice(line.quantity * line.product.price)}</small><em>Tap to track delivery</em></span><ChevronRight size={17} /></button>)}</div><div className="orders-total"><span>Total paid</span><strong>{formatPrice(order.total)}</strong></div><div className="order-address"><MapPin size={16} /><span>{order.customer.name}<br />{order.customer.address}, {order.customer.city} · {order.customer.pin}</span></div></div>}</div></div>}
+
       {showCart && <div className="overlay"><div className="drawer cart-drawer"><div className="drawer-header"><div><span className="tiny-label">Your bag</span><h2>{cartCount} {cartCount === 1 ? "item" : "items"}</h2></div><button className="close-button" onClick={() => setShowCart(false)}><X size={20} /></button></div>{cart.length === 0 ? <div className="cart-empty"><div className="empty-bag"><ShoppingBag size={32} /></div><h3>Your bag is waiting</h3><p>Add something useful, delightful, or both.</p><button className="primary-button" onClick={() => setShowCart(false)}>Keep browsing</button></div> : <><div className="cart-lines">{cart.map(line => <div className="cart-line" key={line.product.id}><img src={line.product.image} alt="" /><div className="cart-line-info"><h3>{line.product.name}</h3><small>Delivering to {city}</small><strong>{formatPrice(line.product.price)}</strong><div className="quantity-control"><button onClick={() => updateQuantity(line.product.id, -1)}><Minus size={13} /></button><span>{line.quantity}</span><button onClick={() => updateQuantity(line.product.id, 1)}><Plus size={13} /></button><button className="remove-link" onClick={() => setCart(current => current.filter(item => item.product.id !== line.product.id))}>Remove</button></div></div></div>)}</div><div className="cart-summary"><div><span>Subtotal</span><strong>{formatPrice(subtotal)}</strong></div><div><span>Delivery</span><strong className="free-text">{deliveryFee === 0 ? "FREE" : formatPrice(deliveryFee)}</strong></div><div className="summary-total"><span>Total</span><strong>{formatPrice(total)}</strong></div><button className="primary-button wide" onClick={() => setShowCheckout(true)}>Proceed to checkout <ArrowRight size={16} /></button><p><ShieldCheck size={14} /> Secure checkout · Easy returns</p></div></>}</div></div>}
+
+      {trackingProduct && <div className="overlay tracking-overlay"><div className="modal tracking-modal"><button className="close-button modal-close" onClick={() => setTrackingProduct(null)}><X size={20} /></button><span className="tiny-label">Track your order</span><h2>{trackingProduct.product.name}</h2><div className="tracking-product-head"><img src={trackingProduct.product.image} alt="" /><div><strong>Qty {trackingProduct.quantity}</strong><small>Order #{order?.id}</small><span className="tracking-current"><Check size={14} /> {trackingStatus}</span></div></div><div className="tracking-timeline">{deliveryStatuses.map((status, index) => <div className={`tracking-step ${index <= trackingStep ? "done" : ""}`} key={status}><span>{index <= trackingStep ? <Check size={14} /> : index === 1 ? <PackageCheck size={14} /> : index === 2 ? <Truck size={14} /> : <MapPin size={14} />}</span><div><strong>{status}</strong><small>{index === 0 ? "Your order has been confirmed" : index === 1 ? "Packed carefully at our fulfilment centre" : index === 2 ? `On the way to ${order?.customer.city}` : "Delivered to your doorstep"}</small></div></div>)}</div><div className="tracking-actions">{trackingStep < deliveryStatuses.length - 1 ? <button className="primary-button wide" onClick={advanceTracking}>Update delivery status <ArrowRight size={16} /></button> : <div className="delivered-banner"><Check size={17} /> Delivered successfully</div>}<button className="text-button" onClick={() => setTrackingProduct(null)}>Back to My Orders</button></div></div></div>}
 
       {showWishlist && <div className="overlay"><div className="drawer wishlist-drawer"><div className="drawer-header"><div><span className="tiny-label">Saved for later</span><h2>Wishlist</h2></div><button className="close-button" onClick={() => setShowWishlist(false)}><X size={20} /></button></div>{wishlistIds.length === 0 ? <div className="cart-empty"><div className="empty-bag"><Heart size={32} /></div><h3>Your wishlist is empty</h3><p>Tap a heart on anything you want to keep close.</p><button className="primary-button" onClick={() => setShowWishlist(false)}>Keep browsing</button></div> : <div className="wishlist-lines">{products.filter(product => wishlistIds.includes(product.id)).map(product => <div className="wishlist-line" key={product.id}><img src={product.image} alt="" /><div><strong>{product.name}</strong><small>{formatPrice(product.price)} · {product.rating} ★</small><button className="text-button" onClick={() => { setSelectedProduct(product); setShowWishlist(false); }}>View details <ArrowRight size={13} /></button></div><button className="wishlist saved" onClick={() => toggleWishlist(product)} aria-label={`Remove ${product.name}`}><Heart size={17} fill="currentColor" /></button></div>)}</div>}</div></div>}
 
@@ -456,7 +475,7 @@ export default function Home() {
       {order && <div className="overlay"><div className="modal order-confirmed-modal"><button className="close-button modal-close" onClick={() => setOrder(null)}><X size={20} /></button><div className="success-icon"><Check size={31} /></div><span className="tiny-label">Order confirmed</span><h2>That’s a wrap.</h2><p>Order <strong>#{order.id}</strong> is confirmed and headed your way.</p><div className="confirmed-order-layout"><section className="confirmed-products"><div className="confirmed-section-heading"><div><span className="tiny-label">Ordered products</span><h3>Your Bazaarly picks</h3></div><span>{order.items.length} {order.items.length === 1 ? "item" : "items"}</span></div>{order.items.map(line => <div className="confirmed-product-line" key={line.product.id}><img src={line.product.image} alt="" /><div><strong>{line.product.name}</strong><small>Qty {line.quantity} · {formatPrice(line.product.price)} each</small></div><b>{formatPrice(line.quantity * line.product.price)}</b></div>)}<div className="confirmed-total"><span>Total payable</span><strong>{formatPrice(order.total)}</strong></div></section><section className="confirmed-customer"><div className="confirmed-section-heading"><div><span className="tiny-label">Delivering to</span><h3>{order.customer.city}, {order.customer.state}</h3></div><MapPin size={18} /></div><p><strong>{order.customer.name}</strong><br />{order.customer.phone}</p><p>{order.customer.address}<br />{order.customer.city}, {order.customer.state} · {order.customer.pin}</p><div className="delivery-note"><Truck size={16} /><span>Free delivery · arriving as promised</span></div></section></div><div className="success-actions"><button className="primary-button" onClick={() => setOrder(null)}>Continue shopping <ArrowRight size={16} /></button><button className="text-button" onClick={() => { setOrder(null); toast.info("Order tracking will be available soon."); }}>Track order</button></div></div></div>}
 
       {showPitch && <div className="overlay"><div className="modal pitch-modal"><button className="close-button modal-close" onClick={() => setShowPitch(false)}><X size={20} /></button><div className="pitch-hero"><span className="eyebrow"><span className="eyebrow-dot" /> The Bazaarly story</span><h2>Every click has a<br /><em>next chapter.</em></h2><p>From a city-aware browse to a confirmed delivery, here is what happens behind the simple storefront.</p></div><div className="story-flow"><div><b>01</b><strong>Browse</strong><small>Find a useful pick</small></div><ArrowRight size={16} /><div><b>02</b><strong>Buy</strong><small>Stock is checked live</small></div><ArrowRight size={16} /><div><b>03</b><strong>Deliver</strong><small>Every service reacts</small></div></div><div className="pitch-cards"><div><span className="pitch-icon postgres"><Database size={20} /></span><h3>PostgreSQL remembers.</h3><p>Products, customers, carts, orders and city-level stock stay durable and consistent.</p></div><div><span className="pitch-icon kafka"><Zap size={20} /></span><h3>Kafka keeps it moving.</h3><p>Order placed and inventory changed events let the store react without blocking the shopper.</p></div><div><span className="pitch-icon search"><Search size={20} /></span><h3>OpenSearch finds it.</h3><p>Fast, typo-tolerant search makes “bluetoth” a useful query, not a dead end.</p></div></div><div className="pitch-footer"><span><ShieldCheck size={16} /> Credentials stay in environment variables.</span><button className="primary-button" onClick={() => setShowPitch(false)}>Explore the store <ArrowRight size={16} /></button></div></div></div>}
-      <nav className="mobile-bottom-nav" aria-label="Mobile navigation"><button className="active" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}><Store size={19} /><span>Home</span></button><button onClick={() => setShowPitch(true)}><Sparkles size={19} /><span>Play</span></button><button onClick={() => document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" })}><Gift size={19} /><span>Top Deals</span></button><button onClick={() => setShowLogin(true)}><UserRound size={19} /><span>Account</span></button><button onClick={() => setShowCart(true)}><ShoppingBag size={19} /><span>Cart{cartCount ? ` · ${cartCount}` : ""}</span></button></nav>
+      <nav className="mobile-bottom-nav" aria-label="Mobile navigation"><button className="active" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}><Store size={19} /><span>Home</span></button><button onClick={() => setShowPitch(true)}><Sparkles size={19} /><span>Play</span></button><button onClick={() => document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" })}><Gift size={19} /><span>Top Deals</span></button><button onClick={() => setShowLogin(true)}><UserRound size={19} /><span>Account</span></button><button onClick={() => setShowOrders(true)}><PackageCheck size={19} /><span>My Orders{order ? " · 1" : ""}</span></button></nav>
     </div>
   );
 }
