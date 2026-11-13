@@ -245,3 +245,9 @@ h1 em, h2 em { color:var(--blue); font-style:normal; }
 .account-switch { color:#8b96a7; font-size:10px; text-align:center; margin-top:14px; }
 .account-switch button { border:0; padding:0; background:transparent; color:var(--blue); font:inherit; font-weight:800; cursor:pointer; }
 @media (max-width:700px) { .account-tabs { margin-bottom:15px; } }
+
+@media (max-width:700px) {
+  .login-modal { display:block; max-height:calc(100dvh - 20px); overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
+  .login-modal .login-art { min-height:145px; }
+  .login-modal .login-form { min-height:0; padding-bottom:30px; }
+}
