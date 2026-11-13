@@ -6,6 +6,7 @@ import {
   Bell,
   Bike,
   Check,
+  ChevronLeft,
   ChevronDown,
   ChevronRight,
   CircleHelp,
@@ -355,6 +356,14 @@ export default function Home() {
     window.setTimeout(() => document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
   };
 
+  const showAllProducts = () => {
+    setMaxPrice(15000);
+    setSelectedPriceShortcut(null);
+    setCategory("All picks");
+    setQuery("");
+    window.setTimeout(() => document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+  };
+
   const openTracking = (line: CartLine) => {
     setTrackingProduct(line);
     setTrackingStep(0);
@@ -517,8 +526,8 @@ export default function Home() {
             <div className="filter-pledge"><ShieldCheck size={20} /><span><strong>Our easy promise</strong><small>Fair prices, clear delivery dates, no surprises.</small></span></div>
           </aside>
           <div className="catalog-content">
-            <div className="catalog-heading"><div><span className="tiny-label">Fresh from the shelves</span><h2>Picked for <em>{city}</em></h2><p>{filteredProducts.length} products matched your search</p></div><div className="sort-control"><span>Sort by</span><button>Popular <ChevronDown size={14} /></button></div></div>
-            {filteredProducts.length > 0 ? <div className="product-grid">{filteredProducts.map(product => { const available = product.stock[city] ?? 0; const saved = wishlistIds.includes(product.id); return <article className="product-card" key={product.id}><div className="product-image" style={{ "--product-bg": product.accent } as React.CSSProperties}><span className="product-badge">{product.badge}</span><button className={`wishlist ${saved ? "saved" : ""}`} aria-label={`${saved ? "Remove" : "Save"} ${product.name}`} onClick={() => toggleWishlist(product)}><Heart size={17} fill={saved ? "currentColor" : "none"} /></button><img src={product.image} alt={product.name} /><button className="quick-view" onClick={() => setSelectedProduct(product)}>Quick view <ArrowRight size={13} /></button></div><div className="product-meta"><div className="rating"><Star size={13} fill="currentColor" /> {product.rating} <span>({product.reviews})</span></div><h3>{product.name}</h3><div className="price-row"><strong>{formatPrice(product.price)}</strong><s>{formatPrice(product.mrp)}</s><span>{discount(product)}% off</span></div><div className={`stock-line ${available < 5 ? "low" : ""}`}><span className="stock-dot" /> {available === 0 ? "Out of stock in " + city : available < 5 ? `Only ${available} left in ${city}` : `${available} available in ${city}`}</div><div className="delivery-line"><Truck size={14} /> Delivery by <strong>{product.delivery}</strong></div><button className="add-button" disabled={available === 0} onClick={() => addToCart(product)}>{available === 0 ? "Notify me" : <><Plus size={17} /> Add to cart</>}</button></div></article>; })}</div> : <div className="empty-state"><Search size={32} /><h3>No exact match yet</h3><p>Try a broader search or reset the filters. Our catalog is always getting bigger.</p><button className="primary-button" onClick={() => { setQuery(""); setCategory("All picks"); setMaxPrice(15000); setSelectedPriceShortcut(null); }}>Show all picks</button></div>}
+            <div className="catalog-heading"><div><span className="tiny-label">{selectedPriceShortcut ? `Under ${formatPrice(selectedPriceShortcut)}` : "Fresh from the shelves"}</span><h2>Picked for <em>{city}</em></h2><p>{filteredProducts.length} products matched your search</p></div><div className="catalog-heading-actions">{selectedPriceShortcut && <button className="back-to-products" onClick={showAllProducts}><ChevronLeft size={14} /> Back to all products</button>}<div className="sort-control"><span>Sort by</span><button>Popular <ChevronDown size={14} /></button></div></div></div>
+            {filteredProducts.length > 0 ? <div className="product-grid">{filteredProducts.map(product => { const available = product.stock[city] ?? 0; const saved = wishlistIds.includes(product.id); return <article className="product-card" key={product.id}><div className="product-image" style={{ "--product-bg": product.accent } as React.CSSProperties}><span className="product-badge">{product.badge}</span><button className={`wishlist ${saved ? "saved" : ""}`} aria-label={`${saved ? "Remove" : "Save"} ${product.name}`} onClick={() => toggleWishlist(product)}><Heart size={17} fill={saved ? "currentColor" : "none"} /></button><img src={product.image} alt={product.name} /><button className="quick-view" onClick={() => setSelectedProduct(product)}>Quick view <ArrowRight size={13} /></button></div><div className="product-meta"><div className="rating"><Star size={13} fill="currentColor" /> {product.rating} <span>({product.reviews})</span></div><h3>{product.name}</h3><div className="price-row"><strong>{formatPrice(product.price)}</strong><s>{formatPrice(product.mrp)}</s><span>{discount(product)}% off</span></div><div className={`stock-line ${available < 5 ? "low" : ""}`}><span className="stock-dot" /> {available === 0 ? "Out of stock in " + city : available < 5 ? `Only ${available} left in ${city}` : `${available} available in ${city}`}</div><div className="delivery-line"><Truck size={14} /> Delivery by <strong>{product.delivery}</strong></div><button className="add-button" disabled={available === 0} onClick={() => addToCart(product)}>{available === 0 ? "Notify me" : <><Plus size={17} /> Add to cart</>}</button></div></article>; })}</div> : <div className="empty-state"><Search size={32} /><h3>No exact match yet</h3><p>Try a broader search or reset the filters. Our catalog is always getting bigger.</p><button className="primary-button" onClick={showAllProducts}>Show all picks</button></div>}
           </div>
         </section>
 
