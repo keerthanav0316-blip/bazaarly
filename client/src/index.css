@@ -191,3 +191,48 @@ h1 em, h2 em { color:var(--blue); font-style:normal; }
   .tracking-modal { width:calc(100% - 18px); padding:31px 18px 20px; }
   .orders-drawer { width:100%; }
 }
+
+.payment-options { display:grid; gap:8px; margin:14px 0 4px; }
+.payment-option { display:grid; grid-template-columns:30px 1fr 16px; align-items:center; gap:9px; border:1px solid var(--line); border-radius:12px; padding:10px; cursor:pointer; transition:.18s ease; }
+.payment-option.selected { border-color:var(--blue); background:#f4f8ff; box-shadow:0 0 0 2px rgba(28,82,194,.08); }
+.payment-option input { position:absolute; opacity:0; pointer-events:none; }
+.payment-option-icon { display:grid; place-items:center; width:30px; height:30px; border-radius:9px; background:#eef3ff; color:var(--blue); }
+.payment-option > span:nth-child(3) { display:flex; flex-direction:column; gap:3px; }
+.payment-option strong { font-size:11px; }
+.payment-option small { color:var(--muted); font-size:9px; }
+.payment-radio { width:13px; height:13px; border:2px solid #c8d0dc; border-radius:50%; }
+.payment-option.selected .payment-radio { border:4px solid var(--blue); }
+.rate-product { display:flex; align-items:center; justify-content:space-between; gap:12px; border-top:1px solid var(--line); margin-top:19px; padding-top:14px; }
+.rate-product strong { font-size:11px; }
+.rate-product span, .feedback-stars span { display:flex; gap:2px; }
+.rate-product button, .feedback-stars button { border:0; background:transparent; padding:2px; color:#cbd3df; cursor:pointer; }
+.rate-product button.rated, .feedback-stars button.rated { color:#f5ae27; }
+.feedback-section { display:flex; align-items:center; justify-content:space-between; gap:24px; border:1px solid var(--line); border-radius:20px; background:#fffdf3; margin-top:25px; padding:25px 29px; }
+.feedback-section h2 { margin:4px 0 5px; font-size:25px; }
+.feedback-section p { color:var(--muted); font-size:12px; margin:0; }
+.support-modal, .feedback-modal { width:min(520px, calc(100% - 30px)); padding:34px 30px 28px; }
+.support-modal > h2, .feedback-modal > h2 { margin:7px 0 5px; font-size:28px; }
+.support-modal > p, .feedback-modal > p { color:var(--muted); font-size:12px; margin:0 0 20px; }
+.support-topics { display:grid; gap:8px; text-align:left; }
+.support-topics button { display:grid; grid-template-columns:29px 1fr 15px; align-items:center; gap:10px; border:1px solid var(--line); border-radius:12px; padding:11px; background:#fff; color:var(--ink); text-align:left; cursor:pointer; }
+.support-topics button > svg:first-child { color:var(--blue); }
+.support-topics button span { display:flex; flex-direction:column; gap:3px; }
+.support-topics strong { font-size:12px; }
+.support-topics small { color:var(--muted); font-size:10px; }
+.support-topics button > svg:last-child { color:var(--muted); }
+.support-contact { display:flex; flex-direction:column; align-items:flex-start; gap:6px; border-radius:13px; background:#f5f8ff; margin-top:16px; padding:14px; text-align:left; }
+.support-contact strong { font-size:13px; }
+.support-contact span { color:var(--muted); font-size:11px; }
+.support-contact .primary-button { margin-top:6px; }
+.feedback-stars { display:flex; align-items:center; justify-content:space-between; gap:10px; border:1px solid var(--line); border-radius:12px; padding:12px; margin-bottom:14px; }
+.feedback-stars strong { font-size:12px; }
+.feedback-modal textarea { width:100%; resize:vertical; border:1px solid var(--line); border-radius:12px; padding:12px; color:var(--ink); font:inherit; font-size:12px; outline:none; }
+.feedback-modal textarea:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(28,82,194,.1); }
+.top-links button, .footer-links button { border:0; padding:0; background:transparent; color:inherit; font:inherit; cursor:pointer; }
+@media (max-width:700px) {
+  .feedback-section { display:block; padding:20px; }
+  .feedback-section .outline-button { width:100%; margin-top:16px; }
+  .feedback-section h2 { font-size:22px; }
+  .support-modal, .feedback-modal { width:calc(100% - 18px); padding:31px 18px 20px; }
+  .payment-option { grid-template-columns:28px 1fr 15px; }
+}
