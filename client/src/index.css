@@ -238,3 +238,10 @@ h1 em, h2 em { color:var(--blue); font-style:normal; }
 }
 
 @media (max-width:700px) { .catalog-heading-actions { align-items:flex-start; }.back-to-products { padding:7px 8px; font-size:9px; } }
+
+.account-tabs { display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:4px; margin:0 0 18px; border:1px solid #e3e8f1; border-radius:10px; background:#f7f9fc; }
+.account-tabs button { border:0; border-radius:7px; padding:9px 8px; background:transparent; color:#7c899c; font:inherit; font-size:10px; font-weight:800; cursor:pointer; transition:background .2s ease,color .2s ease,box-shadow .2s ease; }
+.account-tabs button.active { background:#fff; color:var(--blue); box-shadow:0 2px 8px rgba(22,47,92,.1); }
+.account-switch { color:#8b96a7; font-size:10px; text-align:center; margin-top:14px; }
+.account-switch button { border:0; padding:0; background:transparent; color:var(--blue); font:inherit; font-weight:800; cursor:pointer; }
+@media (max-width:700px) { .account-tabs { margin-bottom:15px; } }
