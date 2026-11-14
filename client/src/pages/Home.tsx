@@ -403,7 +403,7 @@ const expansionPhotos: Record<string, string[]> = {
 const expandedCatalog: Array<[string, string, string, number, number, string]> = Object.entries(expansionNames).flatMap(([category, items]) => items.map((name, index) => {
   const [minimum, maximum] = expansionRanges[category];
   const price = Math.round((minimum + ((index * 317) % (maximum - minimum + 1))) / 50) * 50;
-  return [`${category.toLowerCase().replaceAll(" ", "-").replaceAll("&", "and")}-${index + 1}`, name, category, price, Math.round(price * 1.35 / 50) * 50, expansionPhotos[category][index % expansionPhotos[category].length]] as [string, string, string, number, number, string];
+  return [`${category.toLowerCase().replaceAll(" ", "-").replaceAll("&", "and")}-${index + 1}`, name, category, price, Math.round(price * 1.35 / 50) * 50, `query:${index}`] as [string, string, string, number, number, string];
 }));
 
 
@@ -416,11 +416,35 @@ const extraCatalog: Array<[string, string, string, number, number, string]> = [
   ["travel-neck", "CloudRest Travel Neck Pillow", "Bags & Travel", 599, 999, "photo-1589391886645-d51941baf7fb"], ["duffle-weekend", "Weekender Cabin Duffle", "Bags & Travel", 1599, 2799, "photo-1553062407-98eeb64c6a62"], ["passport-cover", "Voyage Passport Cover", "Bags & Travel", 399, 699, "photo-1581553680321-4fffae59fccd"], ["packing-cubes", "PackSmart Travel Cubes", "Bags & Travel", 799, 1299, "photo-1566576912321-d58ddd7a6088"], ["sling-bag", "MetroMove Sling Bag", "Bags & Travel", 899, 1599, "photo-1553062407-98eeb64c6a62"], ["rain-cover", "AllWeather Backpack Cover", "Bags & Travel", 299, 499, "photo-1531891437562-4301cf35b7e4"], ["travel-mug", "RoamSip Travel Mug", "Bags & Travel", 699, 1099, "photo-1513558161293-cdaf765ed2fd"], ["luggage-scale", "TripReady Luggage Scale", "Bags & Travel", 449, 799, "photo-1553531384-cc64ac80f931"],
 ];
 
+const catalogPhotoSets: Record<string, string[]> = {
+  cable: ["photo-1586953208448-b95a79798f07", "photo-1609592424642-3e3d4f6b8f72"],
+  charger: ["photo-1609592424642-3e3d4f6b8f72", "photo-1606904825846-647eb07f5be2"],
+  phone: ["photo-1511707171634-5f897ff02aa9", "photo-1544244015-0df4b3ffc6b0"],
+  earphone: ["photo-1606220945770-b5b6c2c55bf1", "photo-1608043152269-423dbba4e7e1"],
+  keyboard: ["photo-1587829741301-dc798b83add3", "photo-1587825140708-dfaf72ae4b04"],
+  mouse: ["photo-1527814050087-3793815479db", "photo-1587825140708-dfaf72ae4b04"],
+  laptop: ["photo-1496181133206-80ce9b88a853", "photo-1541807084-5c52b6b3adef"],
+  camera: ["photo-1516035069371-29a1b244cc32", "photo-1551818255-e6e10975bc17"],
+  watch: ["photo-1523275335684-37898b6baf30", "photo-1551816230-ef5deaed4a26"],
+  projector: ["photo-1535016120720-40c646be5580", "photo-1527443224154-c4a3942d3acf"],
+  kettle: ["photo-1517256064527-09c73fc73e38", "photo-1556911220-bff31c812dba"],
+  kitchen: ["photo-1556911220-bff31c812dba", "photo-1586023492125-27b2c045efd7", "photo-1507473885765-e6ed057f782c"],
+  shoe: ["photo-1542291026-7eec264c27ff", "photo-1549298916-b41d501d3772", "photo-1543163521-1bf539c55dd2"],
+  fashion: ["photo-1445205170230-053b83016050", "photo-1583391733956-6c78276477e2", "photo-1594633312681-425c7b97ccd1"],
+  beauty: ["photo-1596462502278-27bfdc403348", "photo-1556228720-195a672e8a03", "photo-1522337360788-8b13dee7a37e"],
+  bag: ["photo-1553062407-98eeb64c6a62", "photo-1548036328-c9fa89d128fa", "photo-1566150905458-1bf1fc113f0d"],
+};
+const catalogImageFor = (name: string, category: string, index: number) => {
+  const normalized = name.toLowerCase();
+  const keyword = Object.keys(catalogPhotoSets).find(item => normalized.includes(item));
+  const photos = catalogPhotoSets[keyword ?? (category === "Home & Kitchen" ? "kitchen" : category === "Fashion" ? "fashion" : category === "Beauty" ? "beauty" : category === "Bags & Travel" ? "bag" : "laptop")];
+  return `https://images.unsplash.com/${photos[index % photos.length]}?auto=format&fit=crop&w=900&q=85`;
+};
 const additionalProducts: Product[] = extraCatalog.map(([id, name, category, price, mrp, photo], index) => ({
   id, name, category, price, mrp,
   rating: Number((4.1 + (index % 7) * 0.1).toFixed(1)),
   reviews: `${140 + index * 37}`,
-  image: `https://images.unsplash.com/${photo}?auto=format&fit=crop&w=900&q=85`,
+  image: photo.startsWith("query:") ? catalogImageFor(name, category, index) : `https://images.unsplash.com/${photo}?auto=format&fit=crop&w=900&q=85`,
   badge: index % 4 === 0 ? "Fresh pick" : index % 4 === 1 ? "Good value" : index % 4 === 2 ? "Popular" : "Everyday pick",
   accent: ["#e7f0ff", "#fff3cd", "#e8f7ef", "#ffe8ef", "#edeaff"][index % 5],
   delivery: index % 3 === 0 ? "Tomorrow" : index % 3 === 1 ? "Thu, 14 Nov" : "Fri, 15 Nov",
