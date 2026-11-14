@@ -393,11 +393,17 @@ const expansionNames: Record<string, string[]> = {
   ],
 }
 const expansionRanges: Record<string, [number, number]> = { "Electronics": [249, 14999], "Fashion": [199, 3999], "Home & Kitchen": [99, 4999], "Beauty": [149, 2999], "Bags & Travel": [199, 4999] };
-const expansionPhotos: Record<string, string> = {"Electronics": "photo-1496181133206-80ce9b88a853", "Fashion": "photo-1445205170230-053b83016050", "Home & Kitchen": "photo-1556911220-bff31c812dba", "Beauty": "photo-1596462502278-27bfdc403348", "Bags & Travel": "photo-1553062407-98eeb64c6a62"}
+const expansionPhotos: Record<string, string[]> = {
+  "Electronics": ["photo-1496181133206-80ce9b88a853", "photo-1587825140708-dfaf72ae4b04", "photo-1523275335684-37898b6baf30", "photo-1608043152269-423dbba4e7e1", "photo-1609592424642-3e3d4f6b8f72", "photo-1587829741301-dc798b83add3", "photo-1527814050087-3793815479db", "photo-1544244015-0df4b3ffc6b0", "photo-1606904825846-647eb07f5be2", "photo-1621607512214-68297480165e"],
+  "Fashion": ["photo-1445205170230-053b83016050", "photo-1583391733956-6c78276477e2", "photo-1549298916-b41d501d3772", "photo-1551028719-00167b16eac5", "photo-1544816155-12df9643f363", "photo-1610030469983-98e550d6193c", "photo-1594633312681-425c7b97ccd1", "photo-1586350977771-b3b0abd50c82", "photo-1529139574466-a303027c1d8b", "photo-1515886657613-9f3515b0c78f"],
+  "Home & Kitchen": ["photo-1556911220-bff31c812dba", "photo-1586023492125-27b2c045efd7", "photo-1507473885765-e6ed057f782c", "photo-1584100936595-c0654b55a2e2", "photo-1602143407151-7111542de6e8", "photo-1606787366850-de6330128bfc", "photo-1494438639946-1ebd1d20bf85", "photo-1558317374-067fb5f30001", "photo-1570222094114-d054a817e56b", "photo-1585515320310-259814833e62"],
+  "Beauty": ["photo-1596462502278-27bfdc403348", "photo-1556228720-195a672e8a03", "photo-1612817288484-6f916006741a", "photo-1598440947619-2c35fc9aa908", "photo-1571781926291-c477ebfd024b", "photo-1515377905703-c4788e51af15", "photo-1522337360788-8b13dee7a37e", "photo-1512496015851-a90fb38ba796", "photo-1620916566398-39f1143ab7be", "photo-1570194065650-d99fb4bedf0a"],
+  "Bags & Travel": ["photo-1553062407-98eeb64c6a62", "photo-1548036328-c9fa89d128fa", "photo-1622560480605-d83c853bc5c3", "photo-1556306535-38febf6782e7", "photo-1581605405669-fcdf81165afa", "photo-1566150905458-1bf1fc113f0d", "photo-1590874103328-eac38a683ce7", "photo-1553531384-cc64ac80f931", "photo-1594223274512-ad4803739b7c", "photo-1491637639811-60e8d18f3d5b"]
+}
 const expandedCatalog: Array<[string, string, string, number, number, string]> = Object.entries(expansionNames).flatMap(([category, items]) => items.map((name, index) => {
   const [minimum, maximum] = expansionRanges[category];
   const price = Math.round((minimum + ((index * 317) % (maximum - minimum + 1))) / 50) * 50;
-  return [`${category.toLowerCase().replaceAll(" ", "-").replaceAll("&", "and")}-${index + 1}`, name, category, price, Math.round(price * 1.35 / 50) * 50, expansionPhotos[category]] as [string, string, string, number, number, string];
+  return [`${category.toLowerCase().replaceAll(" ", "-").replaceAll("&", "and")}-${index + 1}`, name, category, price, Math.round(price * 1.35 / 50) * 50, expansionPhotos[category][index % expansionPhotos[category].length]] as [string, string, string, number, number, string];
 }));
 
 
